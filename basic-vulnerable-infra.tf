@@ -3,7 +3,7 @@
 provider "aws" {
   access_key = "AKIAU3KROSIMGJMHICXM" //saurabh@accurics.com
   secret_key = "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"
-  region = "ap-south-1" //Mumbai
+  region = "ca-central-1" //Canada
 }
 
 # Create a VPC to launch our instances into
@@ -12,6 +12,7 @@ resource "aws_vpc" "acqa-test-vpc1" {
   tags = {
     Name = "acqa-test-vpc1"
     ACQAResource = "true"
+    Owner = "ACQA"
   }
 }
 
@@ -24,6 +25,7 @@ resource "aws_security_group" "acqa-test-securitygroup1" {
   tags = {
     Name = "acqa-test-securitygroup1"
     ACQAResource = "true"
+    Owner = "ACQA"
   }
 
   # SSH access from anywhere..

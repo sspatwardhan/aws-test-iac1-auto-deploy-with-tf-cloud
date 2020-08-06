@@ -33,7 +33,7 @@ resource "aws_security_group" "acqa-test-securitygroup1" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/24"]
+    cidr_blocks = ["0.0.0.0/24"]
   }
 
 
@@ -42,21 +42,21 @@ resource "aws_security_group" "acqa-test-securitygroup1" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/24"]
   }
 
   ingress {
     to_port     = 3306
     from_port   = 3306
     protocol    = "tcp"
-    cidr_blocks = ["192.164.0.0/24"]
+    cidr_blocks = ["0.0.0.0/24"]
   }
   # outbound internet access
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/24"]
   }
 }
 

@@ -60,14 +60,14 @@ resource "aws_security_group" "acqa-test-securitygroup1" {
   }
 }
 
-# # Create an internet gateway to give our subnet access to the outside world
-# resource "aws_internet_gateway" "acqa-test-gateway1" {
-#   vpc_id = aws_vpc.acqa-test-vpc1.id
-#   tags = {
-#     Name = "acqa-test-gateway1"
-#     ACQAResource = "true"
-#   }
-# }
+# Create an internet gateway to give our subnet access to the outside world
+resource "aws_internet_gateway" "acqa-test-gateway1" {
+  vpc_id = aws_vpc.acqa-test-vpc1.id
+  tags = {
+    Name = "acqa-test-gateway1"
+    ACQAResource = "true"
+  }
+}
 
 # # Grant the VPC internet access on its main route table
 # resource "aws_route" "acqa-test-route1" {
@@ -76,16 +76,16 @@ resource "aws_security_group" "acqa-test-securitygroup1" {
 #   gateway_id             = aws_internet_gateway.acqa-test-gateway1.id
 # }
 
-# # Create a subnet to launch our instances into
-# resource "aws_subnet" "acqa-test-subnet1" {
-#   vpc_id                  = aws_vpc.acqa-test-vpc1.id
-#   cidr_block              = "10.0.0.0/24"
-#   map_public_ip_on_launch = true
-#   tags = {
-#     Name = "acqa-test-subnet1"
-#     ACQAResource = "true"
-#   }
-# }
+# Create a subnet to launch our instances into
+resource "aws_subnet" "acqa-test-subnet1" {
+  vpc_id                  = aws_vpc.acqa-test-vpc1.id
+  cidr_block              = "10.0.0.0/24"
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "acqa-test-subnet1"
+    ACQAResource = "true"
+  }
+}
 
 # # Setup ebs encryption
 # resource "aws_ebs_encryption_by_default" "acqa-test-ebs1" {
@@ -123,42 +123,94 @@ resource "aws_security_group" "acqa-test-securitygroup1" {
 #   }
 # }
 
-# # Create network interface
-# resource "aws_network_interface" "acqa-test-networkinterface1" {
-#   subnet_id       = aws_subnet.acqa-test-subnet1.id
-#   private_ips     = ["10.0.0.50"]
-#   security_groups = [aws_security_group.acqa-test-securitygroup1.id]
+# Create network interface
+resource "aws_network_interface" "acqa-test-networkinterface1" {
+  subnet_id       = aws_subnet.acqa-test-subnet1.id
+  private_ips     = ["10.0.0.50"]
+  security_groups = [aws_security_group.acqa-test-securitygroup1.id]
 
-#   # attachment {
-#   #   instance     = aws_instance.acqa-test-instance1.id
-#   #   device_index = 1
-#   # }
-#   tags = {
-#     Name = "acqa-test-networkinterface1"
-#     ACQAResource = "true"
-#   }
-# }
+  # attachment {
+  #   instance     = aws_instance.acqa-test-instance1.id
+  #   device_index = 1
+  # }
+  tags = {
+    Name = "acqa-test-networkinterface1"
+    ACQAResource = "true"
+  }
+}
 
-# # Get the userID for s3 bucket
-# data "aws_canonical_user_id" "current_user" {}
+# Get the userID for s3 bucket
+data "aws_canonical_user_id" "current_user" {}
 
-# # Create S3 bucket
-# resource "aws_s3_bucket" "acqa-test-s3bucket1" {
-#   bucket = "acqa-test-s3bucket1"
+# Create S3 bucket
+resource "aws_s3_bucket" "acqa-test-s3bucket1" {
+  bucket = "acqa-test-s3bucket1"
 
-#   grant {
-#     id          = data.aws_canonical_user_id.current_user.id
-#     type        = "CanonicalUser"
-#     permissions = ["FULL_CONTROL"]
-#   }
+  grant {
+    id          = data.aws_canonical_user_id.current_user.id
+    type        = "CanonicalUser"
+    permissions = ["FULL_CONTROL"]
+  }
 
-#   grant {
-#     type        = "Group"
-#     permissions = ["READ", "WRITE"]
-#     uri         = "http://acs.amazonaws.com/groups/s3/LogDelivery"
-#   }
-#   tags = {
-#     Name = "acqa-test-s3bucket1"
-#     ACQAResource = "true"
-#   }
-# }
+  grant {
+    type        = "Group"
+    permissions = ["READ", "WRITE"]
+    uri         = "http://acs.amazonaws.com/groups/s3/LogDelivery"
+  }
+  tags = {
+    Name = "acqa-test-s3bucket1"
+    ACQAResource = "true"
+  }
+}
+
+# Create IAM role for lamda
+resource "aws_iam_role" "acqa-test-iamrole1" {
+  name = "acqa-test-iamrole1"
+
+  tags = {
+    Name = "acqa-test-iamrole1"
+    ACQAResource = "true"
+  }
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+
+# Create lambda function
+resource "aws_lambda_function" "acqa-test-lambda1" {
+  tags = {
+    Name = "acqa-test-lambda1"
+    ACQAResource = "true"
+  }
+
+  filename      = "acqa-test-lambda1.zip"
+  function_name = "acqa-test-lambda1"
+  role          = aws_iam_role.acqa-test-iamrole1.arn
+  handler       = "exports.test"
+
+  # The filebase64sha256() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
+  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
+  source_code_hash = filebase64sha256("acqa-test-lambda1.zip")
+
+  runtime = "nodejs12.x"
+
+  environment {
+    variables = {
+      foo = "bar"
+    }
+  }
+}

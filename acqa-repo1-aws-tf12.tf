@@ -13,6 +13,7 @@ resource "aws_vpc" "acqa-test-vpc1" {
     Name = "acqa-test-vpc1"
     ACQAResource = "true"
     Owner = "ACQA"
+    Drift = "One"
   }
 }
 
@@ -51,6 +52,15 @@ resource "aws_security_group" "acqa-test-securitygroup1" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/24"]
   }
+  
+  # Drift 2
+  ingress {
+    to_port     = 3333
+    from_port   = 3333
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/24"]
+  }
+  
   # outbound internet access
   egress {
     from_port   = 0

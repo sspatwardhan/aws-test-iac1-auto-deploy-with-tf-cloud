@@ -224,3 +224,42 @@ resource "aws_lambda_function" "acqa-test-lambda1" {
     }
   }
 }
+
+# Create SSM parameter resource
+resource "aws_ssm_parameter" "acqa-test-ssmparam1" {
+  name  = "acqa-test-ssmparam1"
+  type  = "String"
+  value = "bar"
+  
+  tags = {
+    Name = "acqa-test-ssmparam1"
+    ACQAResource = "true"
+  }
+
+}
+
+# Create SSM document resource
+resource "aws_ssm_document" "acqa-test-ssmdoc1" {
+  name          = "acqa-test-ssmdoc1"
+  document_type = "Command"
+
+  content = <<DOC
+  {
+    "schemaVersion": "1.2",
+    "description": "Check ip configuration of a Linux instance.",
+    "parameters": {
+
+    },
+    "runtimeConfig": {
+      "aws:runShellScript": {
+        "properties": [
+          {
+            "id": "0.aws:runShellScript",
+            "runCommand": ["ifconfig"]
+          }
+        ]
+      }
+    }
+  }
+DOC
+}

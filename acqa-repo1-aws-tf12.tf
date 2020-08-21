@@ -79,13 +79,6 @@ resource "aws_internet_gateway" "acqa-test-gateway1" {
   }
 }
 
-# # Grant the VPC internet access on its main route table
-# resource "aws_route" "acqa-test-route1" {
-#   route_table_id         = aws_vpc.acqa-test-vpc1.main_route_table_id
-#   destination_cidr_block = "0.0.0.0/0"
-#   gateway_id             = aws_internet_gateway.acqa-test-gateway1.id
-# }
-
 # Create a subnet to launch our instances into
 resource "aws_subnet" "acqa-test-subnet1" {
   vpc_id                  = aws_vpc.acqa-test-vpc1.id
@@ -96,42 +89,6 @@ resource "aws_subnet" "acqa-test-subnet1" {
     ACQAResource = "true"
   }
 }
-
-# # Setup ebs encryption
-# resource "aws_ebs_encryption_by_default" "acqa-test-ebs1" {
-#   enabled = false
-# }
-
-# # Filter AMI for the ec2 instance
-# data "aws_ami" "ubuntu" {
-#   most_recent = true
-
-#   filter {
-#     name   = "name"
-#     values = ["ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-*"]
-#   }
-
-#   filter {
-#     name   = "virtualization-type"
-#     values = ["hvm"]
-#   }
-
-#   owners = ["099720109477"] # Canonical
-# }
-
-# # Create EC2 instance
-# resource "aws_instance" "acqa-test-instance1" {
-#   ami           = data.aws_ami.ubuntu.id
-#   instance_type = "t2.micro"
-#   subnet_id    = aws_subnet.acqa-test-subnet1.id
-#   instance_initiated_shutdown_behavior  = "stop"
-#   vpc_security_group_ids = ["${aws_security_group.acqa-test-securitygroup1.id}"]
-#   subnet_id = aws_subnet.acqa-test-subnet1.id
-#   tags = {
-#     Name = "acqa-test-instance1"
-#     ACQAResource = "true"
-#   }
-# }
 
 # Create network interface
 resource "aws_network_interface" "acqa-test-networkinterface1" {
@@ -235,31 +192,4 @@ resource "aws_ssm_parameter" "acqa-test-ssmparam1" {
     Name = "acqa-test-ssmparam1"
     ACQAResource = "true"
   }
-
-}
-
-# Create SSM document resource
-resource "aws_ssm_document" "acqa-test-ssmdoc1" {
-  name          = "acqa-test-ssmdoc1"
-  document_type = "Command"
-
-  content = <<DOC
-  {
-    "schemaVersion": "1.2",
-    "description": "Check ip configuration of a Linux instance.",
-    "parameters": {
-
-    },
-    "runtimeConfig": {
-      "aws:runShellScript": {
-        "properties": [
-          {
-            "id": "0.aws:runShellScript",
-            "runCommand": ["ifconfig"]
-          }
-        ]
-      }
-    }
-  }
-DOC
 }

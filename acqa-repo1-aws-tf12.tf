@@ -3,17 +3,17 @@
 provider "aws" {
   access_key = "AKIAZK42YNKEL4DGNXES" //saurabh@accurics.com
   secret_key = "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"
-  region = "ca-central-1" //Canada
+  region     = "ca-central-1" //Canada
 }
 
 # Create a VPC to launch our instances into
 resource "aws_vpc" "acqa-test-vpc1" {
   cidr_block = "10.0.0.0/16"
   tags = {
-    Name = "acqa-test-vpc1"
+    Name         = "acqa-test-vpc1"
     ACQAResource = "true"
-    Owner = "ACQA"
-    Drift = "One"
+    Owner        = "ACQA"
+    Drift        = "One"
   }
 }
 
@@ -24,9 +24,9 @@ resource "aws_security_group" "acqa-test-securitygroup1" {
   vpc_id      = aws_vpc.acqa-test-vpc1.id
 
   tags = {
-    Name = "acqa-test-securitygroup1"
+    Name         = "acqa-test-securitygroup1"
     ACQAResource = "true"
-    Owner = "ACQA"
+    Owner        = "ACQA"
   }
 
   # SSH access from anywhere..
@@ -52,7 +52,7 @@ resource "aws_security_group" "acqa-test-securitygroup1" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/24"]
   }
-  
+
   # Drift 2
   ingress {
     to_port     = 3333
@@ -60,7 +60,7 @@ resource "aws_security_group" "acqa-test-securitygroup1" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/24"]
   }
-  
+
   # outbound internet access
   egress {
     from_port   = 0
@@ -74,7 +74,7 @@ resource "aws_security_group" "acqa-test-securitygroup1" {
 resource "aws_internet_gateway" "acqa-test-gateway1" {
   vpc_id = aws_vpc.acqa-test-vpc1.id
   tags = {
-    Name = "acqa-test-gateway1"
+    Name         = "acqa-test-gateway1"
     ACQAResource = "true"
   }
 }
@@ -85,7 +85,7 @@ resource "aws_subnet" "acqa-test-subnet1" {
   cidr_block              = "10.0.0.0/24"
   map_public_ip_on_launch = true
   tags = {
-    Name = "acqa-test-subnet1"
+    Name         = "acqa-test-subnet1"
     ACQAResource = "true"
   }
 }
@@ -101,7 +101,7 @@ resource "aws_network_interface" "acqa-test-networkinterface1" {
   #   device_index = 1
   # }
   tags = {
-    Name = "acqa-test-networkinterface1"
+    Name         = "acqa-test-networkinterface1"
     ACQAResource = "true"
   }
 }
@@ -125,8 +125,16 @@ resource "aws_s3_bucket" "acqa-test-s3bucket1" {
     uri         = "http://acs.amazonaws.com/groups/s3/LogDelivery"
   }
   tags = {
-    Name = "acqa-test-s3bucket1"
+    Name         = "acqa-test-s3bucket1"
     ACQAResource = "true"
+  }
+
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm = "AES256"
+      }
+    }
   }
 }
 
@@ -135,7 +143,7 @@ resource "aws_iam_role" "acqa-test-iamrole1" {
   name = "acqa-test-iamrole1"
 
   tags = {
-    Name = "acqa-test-iamrole1"
+    Name         = "acqa-test-iamrole1"
     ACQAResource = "true"
   }
 
@@ -159,7 +167,7 @@ EOF
 # Create lambda function
 resource "aws_lambda_function" "acqa-test-lambda1" {
   tags = {
-    Name = "acqa-test-lambda1"
+    Name         = "acqa-test-lambda1"
     ACQAResource = "true"
   }
 
@@ -187,9 +195,9 @@ resource "aws_ssm_parameter" "acqa-test-ssmparam1" {
   name  = "acqa-test-ssmparam1"
   type  = "String"
   value = "bar"
-  
+
   tags = {
-    Name = "acqa-test-ssmparam1"
+    Name         = "acqa-test-ssmparam1"
     ACQAResource = "true"
   }
 }

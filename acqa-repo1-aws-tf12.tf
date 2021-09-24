@@ -1,8 +1,6 @@
 # Create a new instance of the latest Ubuntu 14.04 on an
 # t2.micro node with an AWS Tag naming it "HelloWorld"
 provider "aws" {
-  access_key = "AKIAZK42YNKEL4DGNXES" //saurabh@accurics.com
-  secret_key = "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"
   region = "ca-central-1" //Canada
 }
 
